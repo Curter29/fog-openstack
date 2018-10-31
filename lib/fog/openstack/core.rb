@@ -56,7 +56,7 @@ module Fog
               :path    => "#{@path}/#{params[:path]}"
             )
           )
-        rescue Excon::Errors::Unauthorized => error
+        rescue Excon::Errors::Unauthorized, Excon::Error::Unauthorized => error
           # token expiration and token renewal possible
           if error.response.body != 'Bad username or password' && @openstack_can_reauthenticate && !retried
             @openstack_must_reauthenticate = true
