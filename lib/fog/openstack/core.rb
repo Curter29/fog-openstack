@@ -48,7 +48,7 @@ module Fog
       private
 
       def request(params, parse_json = true)
-        retried = false
+        retried = 0
         begin
           response = @connection.request(
             params.merge(
@@ -58,10 +58,11 @@ module Fog
           )
         rescue Excon::Errors::Unauthorized, Excon::Error::Unauthorized => error
           # token expiration and token renewal possible
-          if error.response.body != 'Bad username or password' && @openstack_can_reauthenticate && !retried
+          if error.response.body != 'Bad username or password' && @openstack_can_reauthenticate && retried <= 3
+            sleep(1)
             @openstack_must_reauthenticate = true
             authenticate
-            retried = true
+            retried += 1
             retry
           # bad credentials or token renewal not possible
           else
